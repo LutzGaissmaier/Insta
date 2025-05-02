@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riona-AI Admin - Studibuch.de</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            padding-top: 20px;
+            padding-bottom: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        .header {
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e5e5e5;
+            margin-bottom: 30px;
+        }
+        .post-card {
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+        }
+        .post-image {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 10px;
+        }
+        .nav-tabs {
+            margin-bottom: 20px;
+        }
+        .tab-content {
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+        }
+        .activity-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 30px;
+        }
+        
+        /* Instagram Post Preview Styles */
+        .instagram-preview {
+            max-width: 470px;
+            margin: 0 auto 30px;
+            border: 1px solid #dbdbdb;
+            border-radius: 3px;
+            background-color: white;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        .instagram-header {
+            display: flex;
+            align-items: center;
+            padding: 14px 16px;
+            border-bottom: 1px solid #efefef;
+        }
+        .instagram-profile-pic {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            margin-right: 12px;
+            background-color: #efefef;
+            overflow: hidden;
+        }
+        .instagram-profile-pic img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .instagram-username {
+            font-weight: 600;
+            font-size: 14px;
+            color: #262626;
+        }
+        .instagram-more {
+            margin-left: auto;
+            font-size: 16px;
+            color: #262626;
+        }
+        .instagram-image-container {
+            position: relative;
+            width: 100%;
+            background-color: #efefef;
+        }
+        .instagram-image {
+            width: 100%;
+            display: block;
+        }
+        .instagram-actions {
+            display: flex;
+            padding: 8px 16px;
+        }
+        .instagram-action-icon {
+            font-size: 24px;
+            margin-right: 16px;
+            color: #262626;
+        }
+        .instagram-save {
+            margin-left: auto;
+        }
+        .instagram-likes {
+            font-weight: 600;
+            font-size: 14px;
+            color: #262626;
+            padding: 0 16px 8px;
+        }
+        .instagram-caption {
+            padding: 0 16px 16px;
+            font-size: 14px;
+            color: #262626;
+            line-height: 1.4;
+        }
+        .instagram-username-caption {
+            font-weight: 600;
+            margin-right: 4px;
+        }
+        .instagram-hashtags {
+            color: #00376b;
+        }
+        .instagram-comments {
+            padding: 0 16px 8px;
+            font-size: 14px;
+            color: #8e8e8e;
+        }
+        .instagram-time {
+            padding: 0 16px 16px;
+            font-size: 10px;
+            color: #8e8e8e;
+            text-transform: uppercase;
+        }
+        
+        /* Platform Tabs */
+        .platform-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .platform-tab {
+            padding: 10px 15px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-top-left-radius: 0.25rem;
+            border-top-right-radius: 0.25rem;
+            margin-bottom: -1px;
+            color: #6c757d;
+            position: relative;
+        }
+        .platform-tab.active {
+            color: #495057;
+            background-color: #fff;
+            border-color: #dee2e6 #dee2e6 #fff;
+        }
+        .platform-tab:hover:not(.active) {
+            border-color: #e9ecef #e9ecef #dee2e6;
+        }
+        .platform-icon {
+            font-size: 18px;
+            margin-right: 8px;
+        }
+        .platform-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            transform: translate(50%, -50%);
+            background-color: #6c757d;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        .platform-tab.active .platform-badge {
+            background-color: #007bff;
+        }
+        .platform-content {
+            display: none;
+        }
+        .platform-content.active {
+            display: block;
+        }
+        
+        /* Future Platform Placeholders */
+        .future-platform {
+            padding: 30px;
+            text-align: center;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .future-platform-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #6c757d;
+        }
+        .future-platform-title {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #343a40;
+        }
+        .future-platform-description {
+            color: #6c757d;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Riona-AI Admin - Studibuch.de</h1>
+            <p class="lead">Verwalten Sie Ihre automatisierten Social-Media-Posts</p>
+        </div>
+
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="content-plan-tab" data-bs-toggle="tab" data-bs-target="#content-plan" type="button" role="tab" aria-controls="content-plan" aria-selected="true">Content-Plan</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="post-preview-tab" data-bs-toggle="tab" data-bs-target="#post-preview" type="button" role="tab" aria-controls="post-preview" aria-selected="false">Post-Vorschau</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="articles-tab" data-bs-toggle="tab" data-bs-target="#articles" type="button" role="tab" aria-controls="articles" aria-selected="false">Magazinartikel</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="activities-tab" data-bs-toggle="tab" data-bs-target="#activities" type="button" role="tab" aria-controls="activities" aria-selected="false">KI-Aktivitäten</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="images-tab" data-bs-toggle="tab" data-bs-target="#images" type="button" role="tab" aria-controls="images" aria-selected="false">Bilder</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="stats-tab" data-bs-toggle="tab" data-bs-target="#stats" type="button" role="tab" aria-controls="stats" aria-selected="false">Statistiken</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="platforms-tab" data-bs-toggle="tab" data-bs-target="#platforms" type="button" role="tab" aria-controls="platforms" aria-selected="false">Plattformen</button>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="content-plan" role="tabpanel" aria-labelledby="content-plan-tab">
+                <h2>Content-Plan</h2>
+                <div class="alert alert-info">
+                    Hier sehen Sie alle geplanten Posts für Instagram, basierend auf Magazinartikeln.
+                </div>
+                <div id="content-plan-container" class="row">
+                    <p>Lade Content-Plan...</p>
+                </div>
+            </div>
+            
+            <div class="tab-pane fade" id="post-preview" role="tabpanel" aria-labelledby="post-preview-tab">
+                <h2>Post-Vorschau</h2>
+                <div class="alert alert-info">
+                    Hier sehen Sie, wie Ihre Posts auf verschiedenen Plattformen aussehen werden.
+                </div>
+                
+                <div class="platform-tabs">
+                    <div class="platform-tab active" data-platform="instagram">
+                        <i class="fab fa-instagram platform-icon"></i> Instagram
+                        <span class="platform-badge" id="instagram-post-count">0</span>
+                    </div>
+                    <div class="platform-tab" data-platform="facebook">
+                        <i class="fab fa-facebook platform-icon"></i> Facebook
+                        <span class="platform-badge">0</span>
+                    </div>
+                    <div class="platform-tab" data-platform="tiktok">
+                        <i class="fab fa-tiktok platform-icon"></i> TikTok
+                        <span class="platform-badge">0</span>
+                    </div>
+                    <div class="platform-tab" data-platform="pinterest">
+                        <i class="fab fa-pinterest platform-icon"></i> Pinterest
+                        <span class="platform-badge">0</span>
+                    </div>
+                    <div class="platform-tab" data-platform="linkedin">
+                        <i class="fab fa-linkedin platform-icon"></i> LinkedIn
+                        <span class="platform-badge">0</span>
+                    </div>
+                </div>
+                
+                <div class="platform-content active" id="instagram-preview-content">
+                    <div id="instagram-previews-container">
+                        <p>Lade Instagram-Vorschauen...</p>
+                    </div>
+                </div>
+                
+                <div class="platform-content" id="facebook-preview-content">
+                    <div class="future-platform">
+                        <i class="fab fa-facebook future-platform-icon"></i>
+                        <h3 class="future-platform-title">Facebook-Unterstützung kommt bald</h3>
+                        <p class="future-platform-description">Die Unterstützung für Facebook-Posts wird in einer zukünftigen Version hinzugefügt.</p>
+                    </div>
+                </div>
+                
+                <div class="platform-content" id="tiktok-preview-content">
+                    <div class="future-platform">
+                        <i class="fab fa-tiktok future-platform-icon"></i>
+                        <h3 class="future-platform-title">TikTok-Unterstützung kommt bald</h3>
+                        <p class="future-platform-description">Die Unterstützung für TikTok-Videos wird in einer zukünftigen Version hinzugefügt.</p>
+                    </div>
+                </div>
+                
+                <div class="platform-content" id="pinterest-preview-content">
+                    <div class="future-platform">
+                        <i class="fab fa-pinterest future-platform-icon"></i>
+                        <h3 class="future-platform-title">Pinterest-Unterstützung kommt bald</h3>
+                        <p class="future-platform-description">Die Unterstützung für Pinterest-Pins wird in einer zukünftigen Version hinzugefügt.</p>
+                    </div>
+                </div>
+                
+                <div class="platform-content" id="linkedin-preview-content">
+                    <div class="future-platform">
+                        <i class="fab fa-linkedin future-platform-icon"></i>
+                        <h3 class="future-platform-title">LinkedIn-Unterstützung kommt bald</h3>
+                        <p class="future-platform-description">Die Unterstützung für LinkedIn-Posts wird in einer zukünftigen Version hinzugefügt.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-pane fade" id="articles" role="tabpanel" aria-labelledby="articles-tab">
+                <h2>Magazinartikel</h2>
+                <div class="alert alert-info">
+                    Hier sehen Sie alle gefundenen Artikel aus dem Studibuch-Magazin.
+                </div>
+                <div id="articles-container">
+                    <p>Lade Artikel...</p>
+                </div>
+            </div>
+            
+            <div class="tab-pane fade" id="activities" role="tabpanel" aria-labelledby="activities-tab">
+                <h2>KI-Aktivitäten</h2>
+                <div class="alert alert-info">
+                    Hier sehen Sie alle Aktivitäten der KI (Likes, Kommentare, Follows).
+                </div>
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Likes</h5>
+                                <h2 id="likes-count">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Kommentare</h5>
+                                <h2 id="comments-count">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Follows</h5>
+                                <h2 id="follows-count">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="activities-container">
+                    <p>Lade Aktivitäten...</p>
+                </div>
+            </div>
+            
+            <div class="tab-pane fade" id="images" role="tabpanel" aria-labelledby="images-tab">
+                <h2>Bilder</h2>
+                <div class="alert alert-info">
+                    Hier sehen Sie alle von Riona-AI generierten Bilder für Instagram-Posts.
+                </div>
+                <div id="images-container" class="row">
+                    <p>Lade Bilder...</p>
+                </div>
+            </div>
+            
+            <div class="tab-pane fade" id="stats" role="tabpanel" aria-labelledby="stats-tab">
+                <h2>Statistiken</h2>
+                <div class="alert alert-info">
+                    Hier sehen Sie Statistiken zur Performance Ihrer Instagram-Posts.
+                </div>
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Engagement-Rate</h5>
+                                <div class="chart-container">
+                                    <canvas id="engagement-chart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Aktivitäten pro Tag</h5>
+                                <div class="chart-container">
+                                    <canvas id="activities-chart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Post-Performance</h5>
+                                <div class="chart-container">
+                                    <canvas id="posts-chart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-pane fade" id="platforms" role="tabpanel" aria-labelledby="platforms-tab">
+                <h2>Plattformen</h2>
+                <div class="alert alert-info">
+                    Hier können Sie die Einstellungen für verschiedene Social-Media-Plattformen verwalten.
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <i class="fab fa-instagram me-2"></i> Instagram
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">Status: Aktiv</h5>
+                                <p class="card-text">Instagram-Automatisierung ist eingerichtet und aktiv.</p>
+                                <div class="mb-3">
+                                    <label class="form-label">Posting-Frequenz</label>
+                                    <select class="form-select" id="instagram-frequency">
+                                        <option value="1">1x täglich</option>
+                                        <option value="2" selected>2-3x wöchentlich</option>
+                                        <option value="3">1x wöchentlich</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Interaktions-Level</label>
+                                    <select class="form-select" id="instagram-interaction">
+                                        <option value="low">Niedrig (nur posten)</option>
+                                        <option value="medium" selected>Mittel (posten + liken)</option>
+                                        <option value="high">Hoch (posten + liken + kommentieren)</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-primary">Einstellungen speichern</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-secondary text-white">
+                                <i class="fab fa-facebook me-2"></i> Facebook
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">Status: Inaktiv</h5>
+                                <p class="card-text">Facebook-Automatisierung ist noch nicht eingerichtet.</p>
+                                <button class="btn btn-secondary" disabled>Kommt bald</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-secondary text-white">
+                                <i class="fab fa-tiktok me-2"></i> TikTok
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">Status: Inaktiv</h5>
+                                <p class="card-text">TikTok-Automatisierung ist noch nicht eingerichtet.</p>
+                                <button class="btn btn-secondary" disabled>Kommt bald</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-secondary text-white">
+                                <i class="fab fa-pinterest me-2"></i> Pinterest
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">Status: Inaktiv</h5>
+                                <p class="card-text">Pinterest-Automatisierung ist noch nicht eingerichtet.</p>
+                                <button class="btn btn-secondary" disabled>Kommt bald</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-secondary text-white">
+                                <i class="fab fa-linkedin me-2"></i> LinkedIn
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">Status: Inaktiv</h5>
+                                <p class="card-text">LinkedIn-Automatisierung ist noch nicht eingerichtet.</p>
+                                <button class="btn btn-secondary" disabled>Kommt bald</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script>
+        // Hilfsfunktion zum Formatieren von Datum und Uhrzeit
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            return new Date(dateString).toLocaleDateString('de-DE', options);
+        }
+        
+        // Hilfsfunktion zum Erstellen einer Instagram-Vorschau
+        function createInstagramPreview(post) {
+            const previewContainer = document.createElement('div');
+            previewContainer.className = 'instagram-preview';
+            
+            // Header
+            const header = document.createElement('div');
+            header.className = 'instagram-header';
+            
+            const profilePic = document.createElement('div');
+            profilePic.className = 'instagram-profile-pic';
+            profilePic.innerHTML = '<img src="https://via.placeholder.com/32x32/007bff/ffffff?text=S" alt="Studibuch">';
+            
+            const username = document.createElement('div');
+            username.className = 'instagram-username';
+            username.textContent = 'studibuch.de';
+            
+            const more = document.createElement('div');
+            more.className = 'instagram-more';
+            more.innerHTML = '<i class="fas fa-ellipsis-h"></i>';
+            
+            header.appendChild(profilePic);
+            header.appendChild(username);
+            header.appendChild(more);
+            
+            // Bild
+            const imageContainer = document.createElement('div');
+            imageContainer.className = 'instagram-image-container';
+            
+            const image = document.createElement('img');
+            image.className = 'instagram-image';
+            image.src = post.localImagePath ? post.localImagePath.replace(/^.*[\\\/]/, '/images/') : 'https://via.placeholder.com/1080x1080/efefef/333333?text=Bild+wird+geladen';
+            image.alt = post.title;
+            
+            imageContainer.appendChild(image);
+            
+            // Aktionen
+            const actions = document.createElement('div');
+            actions.className = 'instagram-actions';
+            actions.innerHTML = `
+                <i class="far fa-heart instagram-action-icon"></i>
+                <i class="far fa-comment instagram-action-icon"></i>
+                <i class="far fa-paper-plane instagram-action-icon"></i>
+                <i class="far fa-bookmark instagram-action-icon instagram-save"></i>
+            `;
+            
+            // Likes
+            const likes = document.createElement('div');
+            likes.className = 'instagram-likes';
+            likes.textContent = 'Gefällt ' + Math.floor(Math.random() * 100 + 20) + ' Mal';
+            
+            // Caption
+            const caption = document.createElement('div');
+            caption.className = 'instagram-caption';
+            
+            const usernameCaption = document.createElement('span');
+            usernameCaption.className = 'instagram-username-caption';
+            usernameCaption.textContent = 'studibuch.de';
+            
+            const captionText = document.createElement('span');
+            captionText.textContent = ' ' + post.caption;
+            
+            const hashtags = document.createElement('div');
+            hashtags.className = 'instagram-hashtags';
+            hashtags.textContent = post.hashtags ? post.hashtags.join(' ') : '#studibuch #studentenleben #studium';
+            
+            caption.appendChild(usernameCaption);
+            caption.appendChild(captionText);
+            caption.appendChild(document.createElement('br'));
+            caption.appendChild(hashtags);
+            
+            // Kommentare
+            const comments = document.createElement('div');
+            comments.className = 'instagram-comments';
+            comments.textContent = 'Alle Kommentare anzeigen';
+            
+            // Zeit
+            const time = document.createElement('div');
+            time.className = 'instagram-time';
+            time.textContent = 'Geplant für ' + formatDate(post.scheduledDate);
+            
+            // Alles zusammenfügen
+            previewContainer.appendChild(header);
+            previewContainer.appendChild(imageContainer);
+            previewContainer.appendChild(actions);
+            previewContainer.appendChild(likes);
+            previewContainer.appendChild(caption);
+            previewContainer.appendChild(comments);
+            previewContainer.appendChild(time);
+            
+            return previewContainer;
+        }
+        
+        // Hilfsfunktion zum Erstellen einer Artikel-Karte
+        function createArticleCard(article) {
+            const card = document.createElement('div');
+            card.className = 'col-md-6 mb-4';
+            
+            card.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">${article.title}</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">${article.content ? article.content.substring(0, 200) + '...' : 'Kein Inhalt verfügbar'}</p>
+                        <a href="${article.url}" target="_blank" class="btn btn-primary">Artikel ansehen</a>
+                        <button class="btn btn-outline-primary preview-btn" data-article-id="${article.id || ''}">Vorschau</button>
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        // Hilfsfunktion zum Erstellen einer Post-Karte
+        function createPostCard(post) {
+            const card = document.createElement('div');
+            card.className = 'col-md-4 mb-4';
+            
+            const statusBadge = post.status === 'scheduled' 
+                ? '<span class="badge bg-warning">Geplant</span>' 
+                : post.status === 'published' 
+                    ? '<span class="badge bg-success">Veröffentlicht</span>' 
+                    : '<span class="badge bg-secondary">Entwurf</span>';
+            
+            card.innerHTML = `
+                <div class="card">
+                    <img src="${post.localImagePath ? post.localImagePath.replace(/^.*[\\\/]/, '/images/') : 'https://via.placeholder.com/300x300'}" class="card-img-top post-image" alt="${post.title}">
+                    <div class="card-body">
+                        <h5 class="card-title">${post.title}</h5>
+                        <p class="card-text">${post.caption.substring(0, 100)}...</p>
+                        <p class="card-text"><small class="text-muted">Geplant für: ${formatDate(post.scheduledDate)}</small></p>
+                        <div class="d-flex justify-content-between">
+                            ${statusBadge}
+                            <button class="btn btn-sm btn-primary preview-btn" data-post-id="${post.id || ''}">Vorschau</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        // Hilfsfunktion zum Erstellen einer Aktivitäts-Zeile
+        function createActivityItem(activity) {
+            const item = document.createElement('div');
+            item.className = 'activity-item';
+            
+            const icon = activity.type === 'like' 
+                ? '<i class="far fa-heart text-danger me-2"></i>' 
+                : activity.type === 'comment' 
+                    ? '<i class="far fa-comment text-primary me-2"></i>' 
+                    : activity.type === 'follow' 
+                        ? '<i class="far fa-user text-success me-2"></i>'
+                        : '<i class="far fa-check-circle text-info me-2"></i>';
+            
+            item.innerHTML = `
+                <div class="d-flex justify-content-between">
+                    <div>
+                        ${icon} ${activity.description}
+                    </div>
+                    <div>
+                        <small class="text-muted">${formatDate(activity.timestamp)}</small>
+                    </div>
+                </div>
+            `;
+            
+            return item;
+        }
+        
+        // Hilfsfunktion zum Erstellen einer Bild-Karte
+        function createImageCard(imagePath) {
+            const card = document.createElement('div');
+            card.className = 'col-md-3 mb-4';
+            
+            card.innerHTML = `
+                <div class="card">
+                    <img src="${imagePath}" class="card-img-top" alt="Generiertes Bild">
+                    <div class="card-body">
+                        <button class="btn btn-sm btn-primary">Verwenden</button>
+                        <button class="btn btn-sm btn-outline-danger">Löschen</button>
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        // Daten laden
+        async function loadData() {
+            try {
+                // Content-Plan laden
+                const contentPlanResponse = await fetch('/api/content-plan');
+                if (contentPlanResponse.ok) {
+                    const contentPlan = await contentPlanResponse.json();
+                    displayContentPlan(contentPlan);
+                    createInstagramPreviews(contentPlan);
+                    document.getElementById('instagram-post-count').textContent = contentPlan.length;
+                }
+                
+                // Artikel laden
+                const articlesResponse = await fetch('/api/articles');
+                if (articlesResponse.ok) {
+                    const articles = await articlesResponse.json();
+                    displayArticles(articles);
+                }
+                
+                // Aktivitäten laden
+                const activitiesResponse = await fetch('/api/activities');
+                if (activitiesResponse.ok) {
+                    const activities = await activitiesResponse.json();
+                    displayActivities(activities);
+                }
+                
+                // Bilder laden
+                const imagesResponse = await fetch('/api/images');
+                if (imagesResponse.ok) {
+                    const images = await imagesResponse.json();
+                    displayImages(images);
+                }
+                
+                // Statistiken laden
+                const performanceResponse = await fetch('/api/performance');
+                if (performanceResponse.ok) {
+                    const performance = await performanceResponse.json();
+                    displayStatistics(performance);
+                }
+                
+            } catch (error) {
+                console.error('Fehler beim Laden der Daten:', error);
+            }
+        }
+        
+        // Content-Plan anzeigen
+        function displayContentPlan(contentPlan) {
+            const container = document.getElementById('content-plan-container');
+            container.innerHTML = '';
+            
+            if (contentPlan.length === 0) {
+                container.innerHTML = '<p>Keine geplanten Posts vorhanden.</p>';
+                return;
+            }
+            
+            for (const post of contentPlan) {
+                container.appendChild(createPostCard(post));
+            }
+        }
+        
+        // Instagram-Vorschauen erstellen
+        function createInstagramPreviews(contentPlan) {
+            const container = document.getElementById('instagram-previews-container');
+            container.innerHTML = '';
+            
+            if (contentPlan.length === 0) {
+                container.innerHTML = '<p>Keine geplanten Posts vorhanden.</p>';
+                return;
+            }
+            
+            for (const post of contentPlan) {
+                container.appendChild(createInstagramPreview(post));
+            }
+        }
+        
+        // Artikel anzeigen
+        function displayArticles(articles) {
+            const container = document.getElementById('articles-container');
+            container.innerHTML = '';
+            
+            if (articles.length === 0) {
+                container.innerHTML = '<p>Keine Artikel gefunden.</p>';
+                return;
+            }
+            
+            const row = document.createElement('div');
+            row.className = 'row';
+            
+            for (const article of articles) {
+                row.appendChild(createArticleCard(article));
+            }
+            
+            container.appendChild(row);
+        }
+        
+        // Aktivitäten anzeigen
+        function displayActivities(activities) {
+            const container = document.getElementById('activities-container');
+            container.innerHTML = '';
+            
+            if (activities.length === 0) {
+                container.innerHTML = '<p>Keine Aktivitäten vorhanden.</p>';
+                return;
+            }
+            
+            // Zähler aktualisieren
+            const likesCount = activities.filter(a => a.type === 'like').length;
+            const commentsCount = activities.filter(a => a.type === 'comment').length;
+            const followsCount = activities.filter(a => a.type === 'follow').length;
+            
+            document.getElementById('likes-count').textContent = likesCount;
+            document.getElementById('comments-count').textContent = commentsCount;
+            document.getElementById('follows-count').textContent = followsCount;
+            
+            // Aktivitäten anzeigen
+            for (const activity of activities) {
+                container.appendChild(createActivityItem(activity));
+            }
+        }
+        
+        // Bilder anzeigen
+        function displayImages(images) {
+            const container = document.getElementById('images-container');
+            container.innerHTML = '';
+            
+            if (images.length === 0) {
+                container.innerHTML = '<p>Keine Bilder vorhanden.</p>';
+                return;
+            }
+            
+            for (const imagePath of images) {
+                container.appendChild(createImageCard(imagePath));
+            }
+        }
+        
+        // Statistiken anzeigen
+        function displayStatistics(performance) {
+            // Engagement-Rate Chart
+            const engagementCtx = document.getElementById('engagement-chart').getContext('2d');
+            new Chart(engagementCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Tag 1', 'Tag 2', 'Tag 3', 'Tag 4', 'Tag 5', 'Tag 6', 'Tag 7'],
+                    datasets: [{
+                        label: 'Engagement-Rate (%)',
+                        data: [2.1, 2.3, 2.5, 2.4, 2.7, 2.9, 3.1],
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+            
+            // Aktivitäten Chart
+            const activitiesCtx = document.getElementById('activities-chart').getContext('2d');
+            new Chart(activitiesCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Tag 1', 'Tag 2', 'Tag 3', 'Tag 4', 'Tag 5', 'Tag 6', 'Tag 7'],
+                    datasets: [
+                        {
+                            label: 'Likes',
+                            data: [45, 52, 38, 41, 56, 48, 60],
+                            backgroundColor: 'rgba(255, 99, 132, 0.5)'
+                        },
+                        {
+                            label: 'Kommentare',
+                            data: [12, 15, 8, 10, 14, 11, 16],
+                            backgroundColor: 'rgba(54, 162, 235, 0.5)'
+                        },
+                        {
+                            label: 'Follows',
+                            data: [5, 7, 4, 6, 8, 5, 9],
+                            backgroundColor: 'rgba(75, 192, 192, 0.5)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            stacked: true
+                        },
+                        y: {
+                            stacked: true
+                        }
+                    }
+                }
+            });
+            
+            // Posts Chart
+            const postsCtx = document.getElementById('posts-chart').getContext('2d');
+            new Chart(postsCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Post 1', 'Post 2', 'Post 3', 'Post 4', 'Post 5'],
+                    datasets: [
+                        {
+                            label: 'Likes',
+                            data: [120, 85, 140, 95, 110],
+                            backgroundColor: 'rgba(255, 99, 132, 0.5)'
+                        },
+                        {
+                            label: 'Kommentare',
+                            data: [25, 18, 30, 22, 27],
+                            backgroundColor: 'rgba(54, 162, 235, 0.5)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y'
+                }
+            });
+        }
+        
+        // Plattform-Tabs
+        document.querySelectorAll('.platform-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Aktiven Tab setzen
+                document.querySelectorAll('.platform-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Aktiven Content setzen
+                const platform = tab.getAttribute('data-platform');
+                document.querySelectorAll('.platform-content').forEach(c => c.classList.remove('active'));
+                document.getElementById(`${platform}-preview-content`).classList.add('active');
+            });
+        });
+        
+        // Daten beim Laden der Seite laden
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>
