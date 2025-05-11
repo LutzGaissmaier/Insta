@@ -51,25 +51,63 @@ Dieses Paket enthält eine Implementierung von Riona-AI für die Automatisierung
     http://localhost:3000
     ```
 
-### Deployment auf Render.com (oder ähnliche Plattformen)
+### Deployment auf Render.com
 
-1.  Erstellen Sie einen Account auf [Render.com](https://render.com/) (kostenloser Tier verfügbar).
-2.  Verbinden Sie Ihr GitHub-Repository (stellen Sie sicher, dass der Code dort hochgeladen ist).
-3.  Erstellen Sie einen neuen "Web Service".
-4.  Konfigurieren Sie den Web Service:
-    -   Name: z.B. `riona-studibuch`
-    -   Environment: Node
-    -   Region: Wählen Sie eine passende Region (z.B. Frankfurt)
-    -   Branch: `main` (oder Ihr Hauptbranch)
-    -   Build Command: `npm install`
-    -   Start Command: `npm start`
-    -   **Node Version**: Stellen Sie sicher, dass Node.js 18 oder höher ausgewählt ist (kann in den Einstellungen angepasst werden).
-5.  Fügen Sie unter "Environment Variables" folgende Variablen hinzu:
-    -   `PORT`: `10000` (Render.com verwendet diesen Port standardmäßig)
-    -   `NODE_ENV`: `production`
-    -   `OPENAI_API_KEY`: (Optional) Ihr OpenAI API-Key.
-    -   `INSTAGRAM_USERNAME`, `INSTAGRAM_PASSWORD`: (Optional, für zukünftige Nutzung)
-6.  Klicken Sie auf "Create Web Service". Das Deployment sollte nun ohne Puppeteer-Probleme durchlaufen.
+#### Voraussetzungen
+1. Ein Render.com-Konto
+2. Ein Creatomate-Konto mit API-Key
+3. Ein Instagram Business-Konto mit Graph API-Zugang
+4. Ein OpenAI-Konto mit API-Key
+
+#### Umgebungsvariablen
+Die folgenden Umgebungsvariablen müssen in den Render.com-Einstellungen konfiguriert werden:
+
+```
+CREATOMATE_API_KEY=Ihr_Creatomate_API_Key
+CREATOMATE_TEMPLATE_ID=Ihre_Template_ID
+INSTAGRAM_ACCESS_TOKEN=Ihr_Instagram_Access_Token
+FACEBOOK_PAGE_ID=Ihre_Facebook_Seiten_ID
+INSTAGRAM_ACCOUNT_ID=Ihre_Instagram_Account_ID
+OPENAI_API_KEY=Ihr_OpenAI_API_Key
+```
+
+#### Deployment-Schritte
+1. Erstellen Sie ein neues Web Service auf Render.com
+2. Verbinden Sie es mit Ihrem GitHub-Repository
+3. Konfigurieren Sie das Service:
+   - Environment: Node
+   - Build Command: `npm install`
+   - Start Command: `npm start`
+   - Node Version: 18.x oder höher
+4. Fügen Sie die Umgebungsvariablen hinzu
+5. Deployen Sie das Service
+
+#### Verzeichnisstruktur
+```
+/
+├── src/
+│   ├── index.js
+│   └── utils/
+│       ├── config.js
+│       ├── creatomateService.js
+│       └── instagramReelsService.js
+├── public/
+│   └── index.html
+├── data/
+│   ├── content/
+│   ├── images/
+│   ├── articles/
+│   └── reels/
+├── package.json
+└── README.md
+```
+
+#### API-Endpunkte
+- `/api/generate-reel-from-article`: Erstellt Reels aus Artikeln
+- `/api/generate-reel-from-topic`: Erstellt Reels aus Themen
+- `/api/reel-status/:creationId`: Prüft den Status eines Reels
+- `/api/reels/:postId`: Löscht ein Reel
+- `/api/reels`: Listet alle Reels
 
 ## Verwendung
 

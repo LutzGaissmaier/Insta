@@ -247,6 +247,12 @@
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="platforms-tab" data-bs-toggle="tab" data-bs-target="#platforms" type="button" role="tab" aria-controls="platforms" aria-selected="false">Plattformen</button>
             </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="reels-tab" data-bs-toggle="tab" data-bs-target="#reels" type="button" role="tab" aria-controls="reels" aria-selected="false">
+                    <i class="fas fa-film me-2"></i>Reels
+                    <span class="badge bg-primary ms-2" id="reels-count">0</span>
+                </button>
+            </li>
         </ul>
         
         <div class="tab-content" id="myTabContent">
@@ -255,6 +261,59 @@
                 <div class="alert alert-info">
                     Hier sehen Sie alle geplanten Posts für Instagram, basierend auf Magazinartikeln.
                 </div>
+                
+                <!-- Neue Einstellungen-Sektion -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Einstellungen</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Posting-Frequenz -->
+                            <div class="col-md-6">
+                                <h6>Posting-Frequenz</h6>
+                                <div class="mb-3">
+                                    <label for="postsPerDay" class="form-label">Posts pro Tag</label>
+                                    <input type="number" class="form-control" id="postsPerDay" min="1" max="10" value="2">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="minTimeBetweenPosts" class="form-label">Mindestzeit zwischen Posts (Stunden)</label>
+                                    <input type="number" class="form-control" id="minTimeBetweenPosts" min="1" max="24" value="4">
+                                </div>
+                                <button class="btn btn-primary" onclick="updatePostingFrequency()">Speichern</button>
+                            </div>
+                            
+                            <!-- Engagement-Einstellungen -->
+                            <div class="col-md-6">
+                                <h6>Engagement-Einstellungen</h6>
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="autoLike">
+                                        <label class="form-check-label" for="autoLike">
+                                            Automatisches Liken
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="autoComment">
+                                        <label class="form-check-label" for="autoComment">
+                                            Automatisches Kommentieren
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="maxLikesPerDay" class="form-label">Max. Likes pro Tag</label>
+                                    <input type="number" class="form-control" id="maxLikesPerDay" min="0" max="100" value="50">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="maxCommentsPerDay" class="form-label">Max. Kommentare pro Tag</label>
+                                    <input type="number" class="form-control" id="maxCommentsPerDay" min="0" max="50" value="20">
+                                </div>
+                                <button class="btn btn-primary" onclick="updateEngagementSettings()">Speichern</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <div id="content-plan-container" class="row">
                     <p>Lade Content-Plan...</p>
                 </div>
@@ -514,6 +573,69 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Reels Tab Content -->
+            <div class="tab-pane fade" id="reels" role="tabpanel" aria-labelledby="reels-tab">
+                <h2>Instagram Reels</h2>
+                <div class="alert alert-info">
+                    Hier können Sie Reels aus Artikeln oder Themen generieren und verwalten.
+                </div>
+
+                <!-- Reels Generator -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Neuen Reel erstellen</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="nav nav-tabs" id="reelGeneratorTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="article-reel-tab" data-bs-toggle="tab" data-bs-target="#article-reel" type="button" role="tab">Aus Artikel</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="topic-reel-tab" data-bs-toggle="tab" data-bs-target="#topic-reel" type="button" role="tab">Aus Thema</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content mt-3" id="reelGeneratorContent">
+                            <!-- Artikel-basierter Reel -->
+                            <div class="tab-pane fade show active" id="article-reel" role="tabpanel">
+                                <div class="mb-3">
+                                    <label for="articleSelect" class="form-label">Artikel auswählen</label>
+                                    <select class="form-select" id="articleSelect">
+                                        <option value="">Bitte wählen...</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-primary" onclick="generateReelFromArticle()">Reel generieren</button>
+                            </div>
+                            <!-- Themen-basierter Reel -->
+                            <div class="tab-pane fade" id="topic-reel" role="tabpanel">
+                                <div class="mb-3">
+                                    <label for="topicInput" class="form-label">Thema eingeben</label>
+                                    <input type="text" class="form-control" id="topicInput" placeholder="z.B. Tipps für die Prüfungsvorbereitung">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="topicImage" class="form-label">Bild auswählen</label>
+                                    <select class="form-select" id="topicImage">
+                                        <option value="">Bitte wählen...</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-primary" onclick="generateReelFromTopic()">Reel generieren</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reels Liste -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Veröffentlichte Reels</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="reels-container" class="row">
+                            <p>Lade Reels...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -651,13 +773,43 @@
                     ? '<span class="badge bg-success">Veröffentlicht</span>' 
                     : '<span class="badge bg-secondary">Entwurf</span>';
             
+            // Datum-Editor hinzufügen
+            const dateEditor = `
+                <div class="mb-2">
+                    <label class="form-label">Geplantes Datum</label>
+                    <input type="datetime-local" class="form-control post-date" 
+                           value="${new Date(post.scheduledDate).toISOString().slice(0, 16)}"
+                           data-post-id="${post.id || ''}">
+                </div>
+            `;
+            
+            // Engagement-Controls hinzufügen
+            const engagementControls = `
+                <div class="mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input post-like" type="checkbox" 
+                               ${post.engagement?.shouldLike ? 'checked' : ''}
+                               data-post-id="${post.id || ''}">
+                        <label class="form-check-label">Like aktivieren</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input post-comment" type="checkbox" 
+                               ${post.engagement?.shouldComment ? 'checked' : ''}
+                               data-post-id="${post.id || ''}">
+                        <label class="form-check-label">Kommentar aktivieren</label>
+                    </div>
+                </div>
+            `;
+            
             card.innerHTML = `
                 <div class="card">
-                    <img src="${post.localImagePath ? post.localImagePath.replace(/^.*[\\\/]/, '/images/') : 'https://via.placeholder.com/300x300'}" class="card-img-top post-image" alt="${post.title}">
+                    <img src="${post.localImagePath ? post.localImagePath.replace(/^.*[\\\/]/, '/images/') : 'https://via.placeholder.com/300x300'}" 
+                         class="card-img-top post-image" alt="${post.title}">
                     <div class="card-body">
                         <h5 class="card-title">${post.title}</h5>
                         <p class="card-text">${post.caption.substring(0, 100)}...</p>
-                        <p class="card-text"><small class="text-muted">Geplant für: ${formatDate(post.scheduledDate)}</small></p>
+                        ${dateEditor}
+                        ${engagementControls}
                         <div class="d-flex justify-content-between">
                             ${statusBadge}
                             <button class="btn btn-sm btn-primary preview-btn" data-post-id="${post.id || ''}">Vorschau</button>
@@ -665,6 +817,25 @@
                     </div>
                 </div>
             `;
+            
+            // Event-Listener für Datum-Änderungen
+            const dateInput = card.querySelector('.post-date');
+            dateInput.addEventListener('change', async (e) => {
+                const newDate = new Date(e.target.value);
+                await updatePostDate(post.id, newDate);
+            });
+            
+            // Event-Listener für Engagement-Änderungen
+            const likeCheckbox = card.querySelector('.post-like');
+            const commentCheckbox = card.querySelector('.post-comment');
+            
+            likeCheckbox.addEventListener('change', async (e) => {
+                await updatePostEngagement(post.id, 'shouldLike', e.target.checked);
+            });
+            
+            commentCheckbox.addEventListener('change', async (e) => {
+                await updatePostEngagement(post.id, 'shouldComment', e.target.checked);
+            });
             
             return card;
         }
@@ -674,20 +845,38 @@
             const item = document.createElement('div');
             item.className = 'activity-item';
             
-            const icon = activity.type === 'like' 
-                ? '<i class="far fa-heart text-danger me-2"></i>' 
-                : activity.type === 'comment' 
-                    ? '<i class="far fa-comment text-primary me-2"></i>' 
-                    : activity.type === 'follow' 
-                        ? '<i class="far fa-user text-success me-2"></i>'
-                        : '<i class="far fa-check-circle text-info me-2"></i>';
+            let icon, color;
+            switch(activity.type) {
+                case 'like':
+                    icon = 'fa-heart';
+                    color = 'text-danger';
+                    break;
+                case 'comment':
+                    icon = 'fa-comment';
+                    color = 'text-primary';
+                    break;
+                case 'follow':
+                    icon = 'fa-user';
+                    color = 'text-success';
+                    break;
+                case 'post':
+                    icon = 'fa-image';
+                    color = 'text-info';
+                    break;
+                default:
+                    icon = 'fa-check-circle';
+                    color = 'text-info';
+            }
             
             item.innerHTML = `
-                <div class="d-flex justify-content-between">
+                <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        ${icon} ${activity.description}
+                        <i class="far ${icon} ${color} me-2"></i>
+                        <span class="activity-description">${activity.description}</span>
+                        ${activity.target ? `<span class="text-muted ms-2">@${activity.target}</span>` : ''}
                     </div>
-                    <div>
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-light text-dark me-2">${activity.platform || 'Instagram'}</span>
                         <small class="text-muted">${formatDate(activity.timestamp)}</small>
                     </div>
                 </div>
@@ -950,8 +1139,325 @@
             });
         });
         
+        // Funktion zum Aktualisieren der Posting-Frequenz
+        async function updatePostingFrequency() {
+            const postsPerDay = document.getElementById('postsPerDay').value;
+            const minTimeBetweenPosts = document.getElementById('minTimeBetweenPosts').value;
+            
+            try {
+                const response = await fetch('/api/update-posting-frequency', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        postsPerDay: parseInt(postsPerDay),
+                        minTimeBetweenPosts: parseInt(minTimeBetweenPosts)
+                    })
+                });
+                
+                if (response.ok) {
+                    alert('Posting-Frequenz erfolgreich aktualisiert!');
+                } else {
+                    throw new Error('Fehler beim Aktualisieren der Posting-Frequenz');
+                }
+            } catch (error) {
+                alert('Fehler: ' + error.message);
+            }
+        }
+        
+        // Funktion zum Aktualisieren der Engagement-Einstellungen
+        async function updateEngagementSettings() {
+            const autoLike = document.getElementById('autoLike').checked;
+            const autoComment = document.getElementById('autoComment').checked;
+            const maxLikesPerDay = document.getElementById('maxLikesPerDay').value;
+            const maxCommentsPerDay = document.getElementById('maxCommentsPerDay').value;
+            
+            try {
+                const response = await fetch('/api/update-engagement-settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        autoLike,
+                        autoComment,
+                        maxLikesPerDay: parseInt(maxLikesPerDay),
+                        maxCommentsPerDay: parseInt(maxCommentsPerDay)
+                    })
+                });
+                
+                if (response.ok) {
+                    alert('Engagement-Einstellungen erfolgreich aktualisiert!');
+                } else {
+                    throw new Error('Fehler beim Aktualisieren der Engagement-Einstellungen');
+                }
+            } catch (error) {
+                alert('Fehler: ' + error.message);
+            }
+        }
+        
+        // Funktion zum Aktualisieren des Post-Datums
+        async function updatePostDate(postId, newDate) {
+            try {
+                // Überprüfe Mindestabstand zwischen Posts
+                const contentPlanResponse = await fetch('/api/content-plan');
+                if (contentPlanResponse.ok) {
+                    const contentPlan = await contentPlanResponse.json();
+                    const minTimeBetweenPosts = 48; // 48 Stunden = 2 Tage
+                    
+                    const conflictingPost = contentPlan.find(post => {
+                        if (post.id === postId) return false;
+                        const postDate = new Date(post.scheduledDate);
+                        const timeDiff = Math.abs(newDate - postDate);
+                        return timeDiff < (minTimeBetweenPosts * 60 * 60 * 1000);
+                    });
+                    
+                    if (conflictingPost) {
+                        if (!confirm(`Warnung: Dieser Post liegt weniger als ${minTimeBetweenPosts} Stunden von einem anderen Post entfernt. Möchten Sie trotzdem fortfahren?`)) {
+                            return;
+                        }
+                    }
+                }
+                
+                const response = await fetch(`/api/update-post-date/${postId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ scheduledDate: newDate.toISOString() })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Fehler beim Aktualisieren des Datums');
+                }
+                
+                // Content-Plan neu laden
+                loadData();
+            } catch (error) {
+                alert('Fehler: ' + error.message);
+            }
+        }
+        
+        // Funktion zum Aktualisieren der Engagement-Einstellungen eines Posts
+        async function updatePostEngagement(postId, setting, value) {
+            try {
+                const response = await fetch(`/api/update-post-engagement/${postId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ [setting]: value })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Fehler beim Aktualisieren der Engagement-Einstellungen');
+                }
+                
+                // Content-Plan neu laden
+                loadData();
+            } catch (error) {
+                alert('Fehler: ' + error.message);
+            }
+        }
+        
+        // Reels-spezifische Funktionen
+        async function loadReels() {
+            try {
+                const response = await fetch('/api/reels');
+                if (response.ok) {
+                    const reels = await response.json();
+                    displayReels(reels);
+                    document.getElementById('reels-count').textContent = reels.length;
+                }
+            } catch (error) {
+                console.error('Fehler beim Laden der Reels:', error);
+            }
+        }
+
+        function displayReels(reels) {
+            const container = document.getElementById('reels-container');
+            container.innerHTML = '';
+
+            if (reels.length === 0) {
+                container.innerHTML = '<p>Keine Reels vorhanden.</p>';
+                return;
+            }
+
+            for (const reel of reels) {
+                const reelCard = createReelCard(reel);
+                container.appendChild(reelCard);
+            }
+        }
+
+        function createReelCard(reel) {
+            const col = document.createElement('div');
+            col.className = 'col-md-4 mb-4';
+            
+            col.innerHTML = `
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">${reel.title}</h5>
+                        <p class="card-text">${reel.description}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge ${getStatusBadgeClass(reel.status)}">${reel.status}</span>
+                            <div>
+                                <a href="${reel.permalink}" target="_blank" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-external-link-alt"></i> Ansehen
+                                </a>
+                                <button class="btn btn-sm btn-danger" onclick="deleteReel('${reel.id}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            return col;
+        }
+
+        function getStatusBadgeClass(status) {
+            switch (status) {
+                case 'published':
+                    return 'bg-success';
+                case 'processing':
+                    return 'bg-warning';
+                case 'failed':
+                    return 'bg-danger';
+                default:
+                    return 'bg-secondary';
+            }
+        }
+
+        async function generateReelFromArticle() {
+            const articleId = document.getElementById('articleSelect').value;
+            if (!articleId) {
+                alert('Bitte wählen Sie einen Artikel aus.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/generate-reel-from-article', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ articleId })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    alert('Reel wird generiert! Sie können den Status in der Liste verfolgen.');
+                    loadReels();
+                } else {
+                    throw new Error('Fehler beim Generieren des Reels');
+                }
+            } catch (error) {
+                alert('Fehler: ' + error.message);
+            }
+        }
+
+        async function generateReelFromTopic() {
+            const topic = document.getElementById('topicInput').value;
+            const imageUrl = document.getElementById('topicImage').value;
+            
+            if (!topic) {
+                alert('Bitte geben Sie ein Thema ein.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/generate-reel-from-topic', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ topic, imageUrl })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    alert('Reel wird generiert! Sie können den Status in der Liste verfolgen.');
+                    loadReels();
+                } else {
+                    throw new Error('Fehler beim Generieren des Reels');
+                }
+            } catch (error) {
+                alert('Fehler: ' + error.message);
+            }
+        }
+
+        async function deleteReel(reelId) {
+            if (!confirm('Möchten Sie diesen Reel wirklich löschen?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/reels/${reelId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    alert('Reel wurde gelöscht.');
+                    loadReels();
+                } else {
+                    throw new Error('Fehler beim Löschen des Reels');
+                }
+            } catch (error) {
+                alert('Fehler: ' + error.message);
+            }
+        }
+
+        // Artikel-Liste für Reels laden
+        async function loadArticlesForReels() {
+            try {
+                const response = await fetch('/api/articles');
+                if (response.ok) {
+                    const articles = await response.json();
+                    const select = document.getElementById('articleSelect');
+                    select.innerHTML = '<option value="">Bitte wählen...</option>';
+                    
+                    articles.forEach(article => {
+                        const option = document.createElement('option');
+                        option.value = article.id;
+                        option.textContent = article.title;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Fehler beim Laden der Artikel:', error);
+            }
+        }
+
+        // Bilder-Liste für Themen-Reels laden
+        async function loadImagesForReels() {
+            try {
+                const response = await fetch('/api/images');
+                if (response.ok) {
+                    const images = await response.json();
+                    const select = document.getElementById('topicImage');
+                    select.innerHTML = '<option value="">Bitte wählen...</option>';
+                    
+                    images.forEach(image => {
+                        const option = document.createElement('option');
+                        option.value = image;
+                        option.textContent = image.split('/').pop();
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Fehler beim Laden der Bilder:', error);
+            }
+        }
+
         // Daten beim Laden der Seite laden
-        document.addEventListener('DOMContentLoaded', loadData);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            loadArticlesForReels();
+            loadImagesForReels();
+            loadReels();
+        });
     </script>
 </body>
 </html>

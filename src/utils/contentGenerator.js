@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const { OpenAI } = require("openai");
 const axios = require("axios");
+const config = require('./config');
 
 // Verzeichnisse für Content-Daten
 const DATA_DIR = path.join(__dirname, "../data");
@@ -224,22 +225,29 @@ function generateComments(count = 20) {
 }
 
 /**
- * Funktion zur Bestimmung einer optimalen Posting-Zeit (unverändert)
+ * Funktion zur Bestimmung einer optimalen Posting-Zeit
+ * @param {Date} [manualDate] - Optional: Manuell festgelegtes Datum
+ * @returns {string} - ISO-String des Datums
  */
-function getOptimalPostingTime() {
-  const now = new Date();
-  const futureDate = new Date(now);
-  futureDate.setDate(now.getDate() + Math.floor(Math.random() * 14) + 1);
-  const weekdayHours = [8, 12, 17, 19, 21];
-  const weekendHours = [10, 13, 15, 20, 22];
-  const isWeekend = futureDate.getDay() === 0 || futureDate.getDay() === 6;
-  const hours = isWeekend ? weekendHours : weekdayHours;
-  futureDate.setHours(
-    hours[Math.floor(Math.random() * hours.length)],
-    Math.floor(Math.random() * 60),
-    0, 0
-  );
-  return futureDate.toISOString();
+function getOptimalPostingTime(manualDate = null) {
+    if (manualDate) {
+        return new Date(manualDate).toISOString();
+    }
+
+    const now = new Date();
+    const futureDate = new Date(now);
+    futureDate.setDate(now.getDate() + Math.floor(Math.random() * 14) + 1);
+    
+    const isWeekend = futureDate.getDay() === 0 || futureDate.getDay() === 6;
+    const hours = isWeekend ? config.postingFrequency.activeHours.weekends : config.postingFrequency.activeHours.weekdays;
+    
+    futureDate.setHours(
+        hours[Math.floor(Math.random() * hours.length)],
+        Math.floor(Math.random() * 60),
+        0, 0
+    );
+    
+    return futureDate.toISOString();
 }
 
 // --- Neue Funktionen für Themen-Posts ---
@@ -288,31 +296,36 @@ function generateHashtagsFromTopic(topic) {
 
 /**
  * Erstellt einen einzelnen Post basierend auf einem Thema.
- * @param {string} topic - Das Thema für den Post.
- * @returns {Promise<Object>} - Das generierte Post-Objekt.
+ * @param {string} topic - Das Thema für den Post
+ * @param {Date} [scheduledDate] - Optional: Manuell festgelegtes Datum
+ * @returns {Promise<Object>} - Das generierte Post-Objekt
  */
-async function generatePostFromTopic(topic) {
-  console.log(`Generiere Post für Thema: ${topic}`);
-  
-  const caption = generateCaptionFromTopic(topic);
-  const hashtags = generateHashtagsFromTopic(topic);
-  const imagePath = await generateImage({ title: topic }); // Nutze die bestehende Funktion
+async function generatePostFromTopic(topic, scheduledDate = null) {
+    console.log(`Generiere Post für Thema: ${topic}`);
+    
+    const caption = generateCaptionFromTopic(topic);
+    const hashtags = generateHashtagsFromTopic(topic);
+    const imagePath = await generateImage({ title: topic });
 
-  const post = {
-    type: "topic", // Neuer Typ zur Unterscheidung
-    title: topic, // Verwende das Thema als Titel
-    imageUrl: null, // Keine ursprüngliche URL bei Themen-Posts
-    localImagePath: imagePath,
-    caption: caption,
-    hashtags: hashtags,
-    fullCaption: `${caption}\n\n${hashtags.join(" ")}`,
-    url: null, // Keine URL bei Themen-Posts
-    scheduledDate: getOptimalPostingTime(),
-    status: "scheduled"
-  };
+    const post = {
+        type: "topic",
+        title: topic,
+        imageUrl: null,
+        localImagePath: imagePath,
+        caption: caption,
+        hashtags: hashtags,
+        fullCaption: `${caption}\n\n${hashtags.join(" ")}`,
+        url: null,
+        scheduledDate: getOptimalPostingTime(scheduledDate),
+        status: "scheduled",
+        engagement: {
+            shouldLike: false,
+            shouldComment: false
+        }
+    };
 
-  console.log(`Post für Thema "${topic}" erstellt.`);
-  return post;
+    console.log(`Post für Thema "${topic}" erstellt.`);
+    return post;
 }
 
 // --- Hauptfunktionen (angepasst) ---
@@ -395,12 +408,11 @@ function saveContentPlan(contentPlan) {
 
 
 module.exports = {
-  createContentPlanFromArticles, // Umbenannt
-  generatePostFromTopic, // Neu
-  loadContentPlan, // Neu
-  saveContentPlan, // Neu
-  generateComments, // Unverändert
-  // Alte createContentPlan entfernt, da Logik jetzt aufgeteilt ist
-  // Alte Hilfsfunktionen (generateCaption, generateHashtags, generateImage, getOptimalPostingTime) werden intern verwendet
+  createContentPlanFromArticles,
+  generatePostFromTopic,
+  loadContentPlan,
+  saveContentPlan,
+  generateComments,
+  getOptimalPostingTime
 };
 

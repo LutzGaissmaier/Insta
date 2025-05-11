@@ -10,6 +10,8 @@ const {
   generateComments // Behalten für mögliche zukünftige Interaktionen
 } = require("./utils/contentGenerator");
 const { ActivityLogger, PerformanceTracker } = require("./utils/monitoring");
+const creatomateService = require('./utils/creatomateService');
+const instagramReelsService = require('./utils/instagramReelsService');
 
 // Express-App erstellen
 const app = express();
@@ -20,9 +22,10 @@ const DATA_DIR = path.join(__dirname, "data");
 const CONTENT_DIR = path.join(DATA_DIR, "content");
 const IMAGES_DIR = path.join(DATA_DIR, "images");
 const ARTICLES_DIR = path.join(DATA_DIR, "articles");
+const REELS_DIR = path.join(DATA_DIR, "reels");
 
 // Sicherstellen, dass die Verzeichnisse existieren
-[DATA_DIR, CONTENT_DIR, IMAGES_DIR, ARTICLES_DIR].forEach(dir => {
+[DATA_DIR, CONTENT_DIR, IMAGES_DIR, ARTICLES_DIR, REELS_DIR].forEach(dir => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
@@ -131,30 +134,80 @@ app.post("/api/update-content-plan", (req, res) => {
   }
 });
 
-// NEU: API-Endpunkt zum Generieren eines Posts basierend auf einem Thema
+// API-Endpunkt zum Generieren eines Posts mit manuellem Datum
 app.post("/api/generate-topic-post", async (req, res) => {
-  const { topic } = req.body;
-  if (!topic) {
-    return res.status(400).json({ error: "Thema fehlt im Request Body" });
-  }
+    const { topic, scheduledDate, engagement } = req.body;
+    if (!topic) {
+        return res.status(400).json({ error: "Thema fehlt im Request Body" });
+    }
 
-  try {
-    console.log(`Anfrage zum Generieren eines Posts für Thema erhalten: ${topic}`);
-    const newPost = await generatePostFromTopic(topic);
-    
-    // Lade bestehenden Plan, füge neuen Post hinzu und speichere
-    const currentPlan = loadContentPlan();
-    currentPlan.push(newPost);
-    saveContentPlan(currentPlan);
-    
-    activityLogger.logActivity("topic_post_generated", `Post für Thema '${topic}' generiert und zum Plan hinzugefügt`);
-    res.status(201).json(newPost); // Gebe den neu erstellten Post zurück
+    try {
+        console.log(`Anfrage zum Generieren eines Posts für Thema erhalten: ${topic}`);
+        const newPost = await generatePostFromTopic(topic, scheduledDate);
+        
+        // Engagement-Einstellungen anwenden, falls vorhanden
+        if (engagement) {
+            newPost.engagement = {
+                shouldLike: engagement.shouldLike || false,
+                shouldComment: engagement.shouldComment || false
+            };
+        }
+        
+        // Lade bestehenden Plan, füge neuen Post hinzu und speichere
+        const currentPlan = loadContentPlan();
+        currentPlan.push(newPost);
+        saveContentPlan(currentPlan);
+        
+        activityLogger.logActivity("topic_post_generated", `Post für Thema '${topic}' generiert und zum Plan hinzugefügt`);
+        res.status(201).json(newPost);
 
-  } catch (error) {
-    console.error(`Fehler beim Generieren des Posts für Thema '${topic}':`, error);
-    activityLogger.logActivity("error", `Fehler bei Themen-Post-Generierung: ${error.message}`);
-    res.status(500).json({ error: "Fehler beim Generieren des Posts" });
-  }
+    } catch (error) {
+        console.error(`Fehler beim Generieren des Posts für Thema '${topic}':`, error);
+        activityLogger.logActivity("error", `Fehler bei Themen-Post-Generierung: ${error.message}`);
+        res.status(500).json({ error: "Fehler beim Generieren des Posts" });
+    }
+});
+
+// Neuer API-Endpunkt zum Aktualisieren der Posting-Frequenz
+app.post("/api/update-posting-frequency", (req, res) => {
+    try {
+        const { postsPerDay, minTimeBetweenPosts, activeHours } = req.body;
+        const config = require('./utils/config');
+        
+        if (postsPerDay) config.postingFrequency.postsPerDay = postsPerDay;
+        if (minTimeBetweenPosts) config.postingFrequency.minTimeBetweenPosts = minTimeBetweenPosts;
+        if (activeHours) {
+            if (activeHours.weekdays) config.postingFrequency.activeHours.weekdays = activeHours.weekdays;
+            if (activeHours.weekends) config.postingFrequency.activeHours.weekends = activeHours.weekends;
+        }
+        
+        activityLogger.logActivity("config_update", "Posting-Frequenz aktualisiert");
+        res.json({ success: true, config: config.postingFrequency });
+    } catch (error) {
+        console.error("Fehler beim Aktualisieren der Posting-Frequenz:", error);
+        res.status(500).json({ error: "Fehler beim Aktualisieren der Konfiguration" });
+    }
+});
+
+// Neuer API-Endpunkt zum Aktualisieren der Engagement-Einstellungen
+app.post("/api/update-engagement-settings", (req, res) => {
+    try {
+        const { autoLike, autoComment, maxLikesPerDay, maxCommentsPerDay, targetHashtags, targetAccounts } = req.body;
+        const config = require('./utils/config');
+        
+        if (typeof autoLike === 'boolean') config.engagement.autoLike = autoLike;
+        if (typeof autoComment === 'boolean') config.engagement.autoComment = autoComment;
+        if (maxLikesPerDay) config.engagement.maxLikesPerDay = maxLikesPerDay;
+        if (maxCommentsPerDay) config.engagement.maxCommentsPerDay = maxCommentsPerDay;
+        if (targetHashtags) config.engagement.targetHashtags = targetHashtags;
+        if (targetAccounts) config.engagement.targetAccounts = targetAccounts;
+        
+        activityLogger.logActivity("config_update", "Engagement-Einstellungen aktualisiert");
+        res.json({ success: true, config: config.engagement });
+    } catch (error) {
+        console.error("Fehler beim Aktualisieren der Engagement-Einstellungen:", error);
+        res.status(500).json({ error: "Fehler beim Aktualisieren der Konfiguration" });
+    }
 });
 
 // NEU: API-Endpunkt zum manuellen Auslösen des Scraping- und Planungs-Prozesses
@@ -171,6 +224,163 @@ app.post("/api/trigger-update", async (req, res) => {
     }
 });
 
+// API-Endpunkt zum Aktualisieren des Datums eines Posts
+app.post("/api/update-post-date/:postId", (req, res) => {
+    try {
+        const { postId } = req.params;
+        const { scheduledDate } = req.body;
+        
+        if (!scheduledDate) {
+            return res.status(400).json({ error: "Datum fehlt im Request Body" });
+        }
+        
+        const contentPlan = loadContentPlan();
+        const postIndex = contentPlan.findIndex(p => p.id === postId);
+        
+        if (postIndex === -1) {
+            return res.status(404).json({ error: "Post nicht gefunden" });
+        }
+        
+        contentPlan[postIndex].scheduledDate = scheduledDate;
+        saveContentPlan(contentPlan);
+        
+        activityLogger.logActivity("post_date_updated", `Datum für Post ${postId} aktualisiert`);
+        res.json({ success: true });
+    } catch (error) {
+        console.error("Fehler beim Aktualisieren des Post-Datums:", error);
+        res.status(500).json({ error: "Fehler beim Aktualisieren des Datums" });
+    }
+});
+
+// API-Endpunkt zum Aktualisieren der Engagement-Einstellungen eines Posts
+app.post("/api/update-post-engagement/:postId", (req, res) => {
+    try {
+        const { postId } = req.params;
+        const updates = req.body;
+        
+        const contentPlan = loadContentPlan();
+        const postIndex = contentPlan.findIndex(p => p.id === postId);
+        
+        if (postIndex === -1) {
+            return res.status(404).json({ error: "Post nicht gefunden" });
+        }
+        
+        // Engagement-Einstellungen aktualisieren
+        if (!contentPlan[postIndex].engagement) {
+            contentPlan[postIndex].engagement = {};
+        }
+        
+        Object.assign(contentPlan[postIndex].engagement, updates);
+        saveContentPlan(contentPlan);
+        
+        activityLogger.logActivity("post_engagement_updated", `Engagement-Einstellungen für Post ${postId} aktualisiert`);
+        res.json({ success: true });
+    } catch (error) {
+        console.error("Fehler beim Aktualisieren der Engagement-Einstellungen:", error);
+        res.status(500).json({ error: "Fehler beim Aktualisieren der Einstellungen" });
+    }
+});
+
+// API-Endpunkt zum Generieren eines Reels aus einem Artikel
+app.post("/api/generate-reel-from-article", async (req, res) => {
+    try {
+        const { articleId } = req.body;
+        if (!articleId) {
+            return res.status(400).json({ error: "Artikel-ID fehlt" });
+        }
+
+        // Artikel aus der Datenbank laden
+        const articlesPath = path.join(ARTICLES_DIR, "articles.json");
+        const articles = JSON.parse(fs.readFileSync(articlesPath, "utf8"));
+        const article = articles.find(a => a.id === articleId);
+
+        if (!article) {
+            return res.status(404).json({ error: "Artikel nicht gefunden" });
+        }
+
+        // Video mit Creatomate generieren
+        const modifications = creatomateService.createArticleModifications(article);
+        const videoUrl = await creatomateService.generateVideo({ modifications });
+
+        // Reel auf Instagram hochladen
+        const creationId = await instagramReelsService.initializeUpload(videoUrl);
+        const result = await instagramReelsService.publishReel(creationId);
+
+        activityLogger.logActivity("reel_created", `Reel aus Artikel "${article.title}" erstellt`);
+        res.json(result);
+    } catch (error) {
+        console.error("Fehler beim Generieren des Reels:", error);
+        activityLogger.logActivity("error", `Fehler bei Reel-Generierung: ${error.message}`);
+        res.status(500).json({ error: "Fehler beim Generieren des Reels" });
+    }
+});
+
+// API-Endpunkt zum Generieren eines Reels aus einem Thema
+app.post("/api/generate-reel-from-topic", async (req, res) => {
+    try {
+        const { topic, imageUrl } = req.body;
+        if (!topic) {
+            return res.status(400).json({ error: "Thema fehlt" });
+        }
+
+        // Video mit Creatomate generieren
+        const modifications = creatomateService.createTopicModifications(topic, imageUrl);
+        const videoUrl = await creatomateService.generateVideo({ modifications });
+
+        // Reel auf Instagram hochladen
+        const creationId = await instagramReelsService.initializeUpload(videoUrl);
+        const result = await instagramReelsService.publishReel(creationId);
+
+        activityLogger.logActivity("reel_created", `Reel zum Thema "${topic}" erstellt`);
+        res.json(result);
+    } catch (error) {
+        console.error("Fehler beim Generieren des Reels:", error);
+        activityLogger.logActivity("error", `Fehler bei Reel-Generierung: ${error.message}`);
+        res.status(500).json({ error: "Fehler beim Generieren des Reels" });
+    }
+});
+
+// API-Endpunkt zum Prüfen des Status eines Reels
+app.get("/api/reel-status/:creationId", async (req, res) => {
+    try {
+        const { creationId } = req.params;
+        const status = await instagramReelsService.checkUploadStatus(creationId);
+        res.json({ status });
+    } catch (error) {
+        console.error("Fehler beim Prüfen des Reel-Status:", error);
+        res.status(500).json({ error: "Fehler beim Prüfen des Status" });
+    }
+});
+
+// API-Endpunkt zum Löschen eines Reels
+app.delete("/api/reels/:postId", async (req, res) => {
+    try {
+        const { postId } = req.params;
+        await instagramReelsService.deleteReel(postId);
+        activityLogger.logActivity("reel_deleted", `Reel ${postId} gelöscht`);
+        res.json({ success: true });
+    } catch (error) {
+        console.error("Fehler beim Löschen des Reels:", error);
+        res.status(500).json({ error: "Fehler beim Löschen des Reels" });
+    }
+});
+
+// API-Endpunkt zum Abrufen der Reels-Liste
+app.get("/api/reels", async (req, res) => {
+    try {
+        const reelsPath = path.join(DATA_DIR, "reels.json");
+        let reels = [];
+        
+        if (fs.existsSync(reelsPath)) {
+            reels = JSON.parse(fs.readFileSync(reelsPath, "utf8"));
+        }
+        
+        res.json(reels);
+    } catch (error) {
+        console.error("Fehler beim Abrufen der Reels:", error);
+        res.status(500).json({ error: "Fehler beim Abrufen der Reels" });
+    }
+});
 
 // --- Hauptseite ---
 app.get("/", (req, res) => {
