@@ -773,13 +773,16 @@
                     ? '<span class="badge bg-success">Veröffentlicht</span>' 
                     : '<span class="badge bg-secondary">Entwurf</span>';
             
-            // Datum-Editor hinzufügen
+            // Datum-Editor mit Feedback
+            const dateEditorId = `date-feedback-${post.id}`;
             const dateEditor = `
                 <div class="mb-2">
                     <label class="form-label">Geplantes Datum</label>
                     <input type="datetime-local" class="form-control post-date" 
                            value="${new Date(post.scheduledDate).toISOString().slice(0, 16)}"
                            data-post-id="${post.id || ''}">
+                    <div id="${dateEditorId}" class="form-text text-success" style="display:none;">Gespeichert!</div>
+                    <div id="${dateEditorId}-warn" class="form-text text-danger" style="display:none;">Datum muss in der Zukunft liegen!</div>
                 </div>
             `;
             
@@ -803,8 +806,7 @@
             
             card.innerHTML = `
                 <div class="card">
-                    <img src="${post.localImagePath ? post.localImagePath.replace(/^.*[\\\/]/, '/images/') : 'https://via.placeholder.com/300x300'}" 
-                         class="card-img-top post-image" alt="${post.title}">
+                    <img src="${post.localImagePath ? post.localImagePath.replace(/^.*[\\\/]/, '/images/') : 'https://via.placeholder.com/300x300'}" class="card-img-top post-image" alt="${post.title}">
                     <div class="card-body">
                         <h5 class="card-title">${post.title}</h5>
                         <p class="card-text">${post.caption.substring(0, 100)}...</p>
@@ -818,21 +820,31 @@
                 </div>
             `;
             
-            // Event-Listener für Datum-Änderungen
+            // Event-Listener für Datum-Änderungen mit Validierung und Feedback
             const dateInput = card.querySelector('.post-date');
+            const feedback = card.querySelector(`#${dateEditorId}`);
+            const warn = card.querySelector(`#${dateEditorId}-warn`);
             dateInput.addEventListener('change', async (e) => {
                 const newDate = new Date(e.target.value);
+                const now = new Date();
+                if (newDate <= now) {
+                    warn.style.display = 'block';
+                    feedback.style.display = 'none';
+                    return;
+                } else {
+                    warn.style.display = 'none';
+                }
                 await updatePostDate(post.id, newDate);
+                feedback.style.display = 'block';
+                setTimeout(() => feedback.style.display = 'none', 2000);
             });
             
             // Event-Listener für Engagement-Änderungen
             const likeCheckbox = card.querySelector('.post-like');
             const commentCheckbox = card.querySelector('.post-comment');
-            
             likeCheckbox.addEventListener('change', async (e) => {
                 await updatePostEngagement(post.id, 'shouldLike', e.target.checked);
             });
-            
             commentCheckbox.addEventListener('change', async (e) => {
                 await updatePostEngagement(post.id, 'shouldComment', e.target.checked);
             });
@@ -1239,28 +1251,6 @@
             }
         }
         
-        // Funktion zum Aktualisieren der Engagement-Einstellungen eines Posts
-        async function updatePostEngagement(postId, setting, value) {
-            try {
-                const response = await fetch(`/api/update-post-engagement/${postId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ [setting]: value })
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Fehler beim Aktualisieren der Engagement-Einstellungen');
-                }
-                
-                // Content-Plan neu laden
-                loadData();
-            } catch (error) {
-                alert('Fehler: ' + error.message);
-            }
-        }
-        
         // Reels-spezifische Funktionen
         async function loadReels() {
             try {
@@ -1457,6 +1447,11 @@
             loadArticlesForReels();
             loadImagesForReels();
             loadReels();
+            const reelsTab = document.getElementById('reels-tab');
+            if (reelsTab) {
+                reelsTab.classList.add('fw-bold');
+                reelsTab.style.backgroundColor = '#e3f2fd';
+            }
         });
     </script>
 </body>
